@@ -10,20 +10,33 @@ Ruby gem to handle settings for ActiveRecord instances by storing them as serial
 
 ### Define settings
 
+RailsSetting & [SettingsLogic](https://github.com/binarylogic/settingslogic)
+
+使用settingslogic设置的参数一次性设置缺省值:
+
+```yaml
+settings:
+  users:
+    defaults:
+      dashboard:
+        theme: blue 
+        view:  monthly
+        filter: false
+      calendar:
+        scope: company
+```
+
 ```ruby
 class User < ActiveRecord::Base
-  has_settings do |s|
-    s.key :dashboard, :defaults => { :theme => 'blue', :view => 'monthly', :filter => false }
-    s.key :calendar,  :defaults => { :scope => 'company'}
-  end
+  has_settings Settings.settings.users
 end
 ```
 
-If no defaults are needed, a simplified syntax can be used:
+也可以单独再追加设置：
 
 ```ruby
 class User < ActiveRecord::Base
-  has_settings :dashboard, :calendar
+  has_setting :info, defaults: { show: true }
 end
 ```
 
@@ -31,7 +44,7 @@ Every setting is handled by the class `RailsSettings::SettingObject`. You can us
 
 ```ruby
 class Project < ActiveRecord::Base
-  has_settings :info, :class_name => 'ProjectSettingObject'
+  has_settings class_name: 'ProjectSettingObject', defaults: { dashboard: {theme: 'default'} }
 end
 
 class ProjectSettingObject < RailsSettings::SettingObject
@@ -50,6 +63,12 @@ user = User.find(1)
 user.settings(:dashboard).theme = 'black'
 user.settings(:calendar).scope = 'all'
 user.settings(:calendar).display = 'daily'
+user.save! # saves new or changed settings, too
+
+user = User.find(1)
+user.settings.dashboard.theme = 'black'
+user.settings:calendar.scope = 'all'
+user.settings:calendar.display = 'daily'
 user.save! # saves new or changed settings, too
 ```
 
@@ -74,6 +93,19 @@ user.settings(:dashboard).view
 
 user.settings(:calendar).scope
 # => 'all'
+
+# or
+
+user = User.find(1)
+user.settings.dashboard.theme
+# => 'black
+
+user.settings.dashboard.view
+# => 'monthly'  (it's the default)
+
+user.settings.calendar.scope
+# => 'all'
+
 ```
 
 

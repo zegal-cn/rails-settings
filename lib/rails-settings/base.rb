@@ -8,14 +8,19 @@ module RailsSettings
                  :dependent  => :delete_all,
                  :class_name => self.setting_object_class_name
 
-        def settings(var)
-          raise ArgumentError unless var.is_a?(Symbol)
-          raise ArgumentError.new("Unknown key: #{var}") unless self.class.default_settings[var]
+        def settings(var=nil)
+          unless var.nil?
+            var = var.to_s
+            raise ArgumentError.new("Unknown key: #{var}") unless self.class.default_settings[var]
 
-          if ActiveRecord::VERSION::MAJOR < 4
-            setting_objects.detect { |s| s.var == var.to_s } || setting_objects.build({ :var => var.to_s }, :without_protection => true)
+            if ActiveRecord::VERSION::MAJOR < 4
+              setting_objects.detect { |s| s.var == var.to_s } || setting_objects.build({ :var => var.to_s }, :without_protection => true)
+            else
+              setting_objects.detect { |s| s.var == var.to_s } || setting_objects.build(:var => var.to_s, :target => self)
+            end
           else
-            setting_objects.detect { |s| s.var == var.to_s } || setting_objects.build(:var => var.to_s, :target => self)
+            @settings ||= Settings.new(self)
+            @settings
           end
         end
 
@@ -42,6 +47,25 @@ module RailsSettings
           end
           settings_hash
         end
+      end
+    end
+  end
+
+  class Settings
+
+    REGEX_SETTER = /\A([a-z]\w+)=\Z/i
+    REGEX_GETTER = /\A([a-z]\w+)\Z/i
+
+    def initialize(target)
+      @target = target
+    end
+
+    def method_missing(method_name, *args, &block)
+      return super if block_given?
+      if method_name.to_s =~ REGEX_GETTER && args.size == 0
+        @target.settings($1)
+      else
+        super
       end
     end
   end

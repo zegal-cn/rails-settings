@@ -6,7 +6,7 @@ module RailsSettings
 
     validates_presence_of :var, :value, :target_type
     validate do
-      unless _target_class.default_settings[var.to_sym]
+      unless _target_class.default_settings[var.to_s]
         errors.add(:var, "#{var} is not defined!")
       end
     end
@@ -53,7 +53,7 @@ module RailsSettings
   private
     def _get_value(name)
       if value[name].nil?
-        _target_class.default_settings[var.to_sym][name]
+        _target_class.default_settings[var.to_s][name]
       else
         value[name]
       end

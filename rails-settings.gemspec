@@ -18,9 +18,10 @@ Gem::Specification.new do |gem|
   gem.require_paths = ['lib']
 
   gem.add_dependency 'activerecord', '>= 3.1'
-
+  gem.add_dependency 'settingslogic'
+  
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'sqlite3'
-  gem.add_development_dependency 'mysql2'
+  #gem.add_development_dependency 'mysql2'
   gem.add_development_dependency 'rspec'
 end

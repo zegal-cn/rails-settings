@@ -15,9 +15,9 @@ module RailsSettings
       if block_given?
         yield(self)
       else
-        keys.each do |k|
-          key(k)
-        end
+        # keys.each do |k|
+        #   key(k)
+        # end
       end
 
       raise ArgumentError.new('has_settings: No keys defined') if @klass.default_settings.blank?
